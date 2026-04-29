@@ -1,0 +1,6 @@
+ @import "tailwindcss";
+
+@theme {
+  --color-otega-green: #114D3A;
+  --color-otega-gold: #FBBF24;
+}
