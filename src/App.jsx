@@ -1,6 +1,7 @@
  import { useState, useEffect } from 'react'
 import { supabase } from './supabase'
 import AdminPanel from './AdminPanel'
+import RiderPortal from './RiderPortal'
 
 export default function App() {
   const [riders, setRiders] = useState([])
@@ -15,6 +16,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false)
   
   const [isAdminView, setIsAdminView] = useState(false)
+  const [isRiderView, setIsRiderView] = useState(false)
 
   // Fetch Riders and Locations
   useEffect(() => {
@@ -115,34 +117,54 @@ export default function App() {
         {status && <div className="text-center font-bold text-lg text-otega-green animate-pulse">{status}</div>}
       </form>
 
-      {/* DEVELOPER SIGNATURE (Pushed to the bottom) */}
+      {/* DEVELOPER SIGNATURE */}
       <div className="mt-auto pt-10 pb-6 text-center w-full z-10">
         <p className="text-xs text-gray-400 font-medium tracking-wide uppercase">
-          Developed by <a href="https://www.instagram.com/moh_raphson1/" className="text-otega-green font-bold hover:underline">Rabiu Aliyu Madachi</a>
+          Developed by <span className="text-otega-green font-bold">Rabiu Aliyu</span>
         </p>
       </div>
 
-      {/* Admin Panel Toggle Logic */}
-      {isAdminView ? (
+      {/* Overlay Views (Admin or Rider) */}
+      {isAdminView && (
         <div className="absolute top-0 left-0 w-full min-h-screen bg-gray-50 flex justify-center items-start pt-8 px-4 z-50">
           <AdminPanel onExit={() => setIsAdminView(false)} />
         </div>
-      ) : (
-        <button 
-          onClick={async () => {
-            const enteredPin = window.prompt("Enter Admin PIN:")
-            if (!enteredPin) return
-            const { data } = await supabase.from('admin_settings').select('pin').eq('id', 1).single()
-            if (data && data.pin === enteredPin) setIsAdminView(true)
-            else alert("Incorrect PIN ❌")
-          }}
-          className="fixed bottom-6 right-6 p-4 bg-gray-800 text-otega-gold rounded-full shadow-xl opacity-20 hover:opacity-100 transition-opacity z-20"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-        </button>
+      )}
+
+      {isRiderView && (
+        <div className="absolute top-0 left-0 w-full min-h-screen bg-gray-900/40 backdrop-blur-sm flex justify-center items-center px-4 z-50">
+          <RiderPortal riders={riders} onExit={() => setIsRiderView(false)} />
+        </div>
+      )}
+
+      {/* Floating Buttons */}
+      {!isAdminView && !isRiderView && (
+        <>
+          {/* Rider Portal Button (Bottom Left) */}
+          <button 
+            onClick={() => setIsRiderView(true)}
+            className="fixed bottom-6 left-6 px-5 py-3 bg-white border-2 border-otega-green text-otega-green font-bold rounded-full shadow-lg hover:bg-otega-green hover:text-white transition-colors z-20 flex items-center gap-2"
+          >
+            <span>🛵</span> Rider Portal
+          </button>
+
+          {/* Admin Button (Bottom Right) */}
+          <button 
+            onClick={async () => {
+              const enteredPin = window.prompt("Enter Admin PIN:")
+              if (!enteredPin) return
+              const { data } = await supabase.from('admin_settings').select('pin').eq('id', 1).single()
+              if (data && data.pin === enteredPin) setIsAdminView(true)
+              else alert("Incorrect PIN ❌")
+            }}
+            className="fixed bottom-6 right-6 p-4 bg-gray-800 text-otega-gold rounded-full shadow-xl opacity-20 hover:opacity-100 transition-opacity z-20"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </button>
+        </>
       )}
 
     </div>
