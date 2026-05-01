@@ -166,6 +166,23 @@ export default function AdminPanel({ onExit }) {
     const { error } = await supabase.from('riders').insert([{ name: newRiderName.trim() }])
     if (error) alert("Error: " + error.message); else { setNewRiderName(''); const { data } = await supabase.from('riders').select('*').order('name'); setRidersList(data); }
   }
+
+
+const handleResetRiderPin = async (id, name) => {
+    if (window.confirm(`Reset ${name}'s PIN back to default (0000)?`)) {
+      
+      // We are adding explicit error checking here
+      const { error } = await supabase.from('riders').update({ pin: '0000' }).eq('id', id)
+      
+      if (error) {
+        alert("❌ Error resetting PIN: " + error.message)
+      } else {
+        alert(`✅ ${name}'s PIN has been securely reset to 0000.`)
+      }
+    }
+  }
+
+
   const handleDeleteRider = async (id, name) => {
     if (window.confirm(`Delete ${name}? WARNING: Deletes history too!`)) { await supabase.from('riders').delete().eq('id', id); const { data } = await supabase.from('riders').select('*').order('name'); setRidersList(data); }
   }
@@ -347,17 +364,21 @@ export default function AdminPanel({ onExit }) {
           <div className="flex flex-col gap-2">
             {isLoading ? <div className="text-center py-6 text-gray-400 font-medium animate-pulse">Loading staff...</div> : ridersList.map(rider => (
               <div key={rider.id} className="flex justify-between items-center p-4 bg-white border border-gray-100 rounded-xl shadow-sm">
-                {editingRiderId === rider.id ? (
-                  <div className="flex gap-2 flex-1 mr-4">
-                    <input type="text" value={editingRiderName} onChange={(e) => setEditingRiderName(e.target.value)} className="flex-1 p-2 border border-otega-green rounded-lg focus:outline-none" autoFocus />
-                    <button onClick={() => handleUpdateRider(rider.id)} className="px-4 bg-otega-green text-white rounded-lg font-bold">Save</button>
-                    <button onClick={() => setEditingRiderId(null)} className="px-4 bg-gray-200 text-gray-700 rounded-lg font-bold">Cancel</button>
-                  </div>
-                ) : ( <span className="font-bold text-lg text-gray-800">{rider.name}</span> )}
                 {editingRiderId !== rider.id && (
                   <div className="flex gap-2">
                     <button onClick={() => { setEditingRiderId(rider.id); setEditingRiderName(rider.name); }} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg text-sm font-medium">Edit</button>
                     <button onClick={() => handleDeleteRider(rider.id, rider.name)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium">Delete</button>
+                  </div>
+                )}
+
+                
+                {editingRiderId !== rider.id && (
+                  <div className="flex gap-2">
+
+                    <button onClick={() => handleResetRiderPin(rider.id, rider.name)} className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg text-sm font-medium">Reset PIN</button>
+                    <button onClick={() => { setEditingRiderId(rider.id); setEditingRiderName(rider.name); }} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg text-sm font-medium">Edit</button>
+                    <button onClick={() => handleDeleteRider(rider.id, rider.name)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium">Delete</button>
+
                   </div>
                 )}
               </div>
